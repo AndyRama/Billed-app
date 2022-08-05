@@ -41,7 +41,15 @@ describe('Bills Unit test suites', () => {
         expect(dates).toEqual(datesSorted)
       })
     })
-    describe("When")
+    // Nous souhaitons tester lorsque utilisateur est connecté en tant qu'employé et qu'il veut crée une nouvelle note de frais.
+    describe("When i click on New", () => {
+      test("Then bills sould be open" , async () => {
+      // récupération de l'instance de bills 
+      // ajout d'un add eventListener  sur le bouton 
+      // vérifier que l'on est sur la bonne page 
+    })
+   })
+
   })
   
 })
