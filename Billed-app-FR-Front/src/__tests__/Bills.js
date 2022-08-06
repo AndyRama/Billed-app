@@ -6,10 +6,13 @@ import {screen, waitFor} from "@testing-library/dom"
 import { toHaveClass } from "@testing-library/jest-dom"
 import BillsUI from "../views/BillsUI.js"
 import { bills } from "../fixtures/bills.js"
-import { ROUTES_PATH} from "../constants/routes.js";
+import { ROUTES, ROUTES_PATH} from "../constants/routes.js";
 import {localStorageMock} from "../__mocks__/localStorage.js";
 
 import router from "../app/Router.js";
+import Bills from "../containers/Bills.js";
+import userEvent from "@testing-library/user-event";
+import NewBill from "../containers/NewBill.js";
 
 beforeEach(()=> {
   // On simule une connection page employee en paramétrant le stockage local
@@ -44,12 +47,20 @@ describe('Bills Unit test suites', () => {
     // Nous souhaitons tester lorsque utilisateur est connecté en tant qu'employé et qu'il veut crée une nouvelle note de frais.
     describe("When i click on New", () => {
       test("Then bills sould be open" , async () => {
-      // récupération de l'instance de bills 
-      // ajout d'un add eventListener  sur le bouton 
-      // vérifier que l'on est sur la bonne page 
+        document.body.innerHTML = BillsUI( { data: [bills[0]] })
+        const btnNewBill = screen.getByTestId('btn-new-bill')
+        // récupération de l'instance de bills 
+        const onNavigate = (pathname) => document.body.innerHTML = ROUTES({ pathname })
+        const billsEmulation = new Bills({ document, onNavigate, store : null, localStorage: window.localStorage })
+        // ajout d'un add eventListener  sur le bouton 
+        const handleClickNewBill = jest.fn(() => billsEmulation.onNavigate(ROUTES_PATH['NewBill']))
+        btnNewBill.addEventListener('click', handleClickNewBill)
+        userEvent.click(btnNewBill)
+        // vérifier que l'on est sur la bonne page 
+        expect(handleClickNewBill).toHaveBeenCalled()
+        await waitFor(() => screen.getAllByTestId('form-new-bill'))
+        expect(screen.getAllByTestId('form-new-bill')).toBeTruthy()
+      })
     })
-   })
-
   })
-  
 })
