@@ -44,7 +44,23 @@ describe("Bills Unit test suites", () => {
         expect(dates).toEqual(datesSorted)
       })
 
-      // TEST BTN NEW
+      // TEST BTN NEW \\
+      
+      // Quand je click sur new bills
+      test("When i click on New", () => {
+        // Alors Une fenetre devrait s'ouvrir
+        then("A new window sould be open", async() => {
+        // On doit afficher newBills
+        document.body.innerHTML = BillsUI({ data: bills[0] })
+        // On récupérait le BTN
+        const buttonNewBill = screen.getAllByTestId('btn-new-bill')
+        // On récupérait l'instance du BTN
+        // On met un écouteur sur le boutton
+        // On vérifie le bouton est bien ecouté
+        // On vérifie que la page est bien ouverte sur NewBill
+        })
+      })
+
       // TEST BTN ICON EYES
       // TEST MOCK API
       // TEST 400
