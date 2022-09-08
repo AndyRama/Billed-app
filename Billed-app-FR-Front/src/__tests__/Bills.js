@@ -2,20 +2,22 @@
  * @jest-environment jsdom
  */
 
-import {screen, waitFor} from "@testing-library/dom"
-import { toHaveClass } from "@testing-library/jest-dom"
-import BillsUI from "../views/BillsUI.js"
-import { bills } from "../fixtures/bills.js"
-import { ROUTES_PATH} from "../constants/routes.js";
-import {localStorageMock} from "../__mocks__/localStorage.js";
-import Bills from "../containers/Bills.js";
+import { screen, waitFor } from "@testing-library/dom"
+import userEvent from '@testing-library/user-event'
+ import { toHaveClass } from "@testing-library/jest-dom"
+ import BillsUI from "../views/BillsUI.js"
+ import { bills } from "../fixtures/bills.js"
+ import { ROUTES, ROUTES_PATH } from "../constants/routes.js";
+ import { localStorageMock } from "../__mocks__/localStorage.js";
+ import mockStore from "../__mocks__/store"
+ 
+ import router from "../app/Router.js";
+ import Bills from "../containers/Bills.js";
 
-import router from "../app/Router.js";
+jest.mock("../app/Store", () => mockStore);
 
-jest.mock("../app/Store", () => mockStore)
-
-beforeEach(() => {
-  // simulation de l'utilisateur en parametrant le stockage local
+beforeEach(()=> {
+  // simulate the connection on the Employee page by setting the localStorage
   Object.defineProperty(window, 'localStorage', { value: localStorageMock })
   window.localStorage.setItem('user', JSON.stringify({
     type: 'Employee'
@@ -23,6 +25,7 @@ beforeEach(() => {
 })
 
 describe("Bills Unit test suites", () => {
+  
   describe("Given I am connected as an employee", () => {
     describe("When I am on Bills Page", () => {
       test("Then bill icon in vertical layout should be highlighted", async () => {
@@ -34,6 +37,7 @@ describe("Bills Unit test suites", () => {
         await waitFor(() => screen.getByTestId('icon-window'))
         const windowIcon = screen.getByTestId('icon-window')
         expect(windowIcon).toHaveClass('active-icon')
+        console.log(windowIcon)
       })
 
       test("Then bills should be ordered from earliest to latest", () => {
@@ -43,28 +47,54 @@ describe("Bills Unit test suites", () => {
         const datesSorted = [...dates].sort(antiChrono)
         expect(dates).toEqual(datesSorted)
       })
+    })
 
-      // TEST BTN NEW \\
-      
-      // Quand je click sur new bills
-      test("When i click on New", () => {
-        // Alors Une fenetre devrait s'ouvrir
-        then("A new window sould be open", async() => {
-        // On doit afficher newBills
-        document.body.innerHTML = BillsUI({ data: bills[0] })
-        // On récupérait le BTN
-        const buttonNewBill = screen.getAllByTestId('btn-new-bill')
-        // On récupérait l'instance du BTN
-        // On met un écouteur sur le boutton
-        // On vérifie le bouton est bien ecouté
-        // On vérifie que la page est bien ouverte sur NewBill
-        })
+    describe("When i click on New",() => {
+      test("a New page should be open", async () => {
+        //displays the expense reports page
+        document.body.innerHTML = BillsUI({ data: [bills[0]] })
+        //récupération bouton
+        const btnNewBill = screen.getByTestId('btn-new-bill')
+        //recuperation instance class Bills 
+        const onNavigate = (pathname) => document.body.innerHTML = ROUTES({ pathname })
+        const billsEmulation = new Bills({ document, onNavigate, store: null, localStorage: window.localStorage })
+        const handleClickNewBill = jest.fn(() => billsEmulation.onNavigate(ROUTES_PATH['NewBill']))
+        //eventListener du bouton
+        btnNewBill.addEventListener('click', handleClickNewBill)
+        userEvent.click(btnNewBill)
+        //vérifie que le clic est bien écouté
+        expect(handleClickNewBill).toHaveBeenCalled()
+        //vérifie que la page est bien ouverte sur le NewBill 
+        await waitFor(() => screen.getAllByTestId('form-new-bill'))
+        expect(screen.getByTestId('form-new-bill')).toBeTruthy()             
       })
+    })
 
-      // TEST BTN ICON EYES
-      // TEST MOCK API
-      // TEST 400
-      // TEST 500
+    describe("When I Click on IconEye", () => {
+      test("Then the preview modal should open", async ()=> {        
+        const onNavigate = (pathname) => {
+          document.body.innerHTML = ROUTES({ pathname })
+        }
+        //recuperation instance class Bills 
+        const billsEmulation = new Bills({
+          document, onNavigate, store: null, localStorage: window.localStorage
+        })
+        //displays the expense reports page
+        document.body.innerHTML = BillsUI({data: [bills[0]]})
+    
+        const modale = document.getElementById('modaleFile')
+        $.fn.modal = jest.fn(() => modale.classList.add("show"))
+    
+        const iconEye = screen.getByTestId('icon-eye')
+        const handleClickIconEye_1 = jest.fn(() => billsEmulation.handleClickIconEye(iconEye))
+        //eventListener sur iconEye
+        iconEye.addEventListener('click', handleClickIconEye_1) 
+        userEvent.click(iconEye)
+        //vérifie que le clic est bien écouté
+        expect(handleClickIconEye_1).toHaveBeenCalled()
+        //vérifie que la modal est bien ouverte sur le NewBill 
+        expect(modale).toHaveClass("show")
+      })
     })
   })
 })
