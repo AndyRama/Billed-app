@@ -24,8 +24,7 @@ beforeEach(()=> {
   }))
 })
 
-describe("Bills Unit test suites", () => {
-  
+describe("Bills Unit test suites", () => {  
   describe("Given I am connected as an employee", () => {
     describe("When I am on Bills Page", () => {
       test("Then bill icon in vertical layout should be highlighted", async () => {
@@ -49,50 +48,72 @@ describe("Bills Unit test suites", () => {
       })
     })
 
-    describe("When i click on New",() => {
-      test("a New page should be open", async () => {
-        //displays the expense reports page
-        document.body.innerHTML = BillsUI({ data: [bills[0]] })
-        //récupération bouton
+    describe('When i click on new Bill', () => {
+      test('Then I sould open a new page newBill', async() => {
+        // afficher le page du rapport
+        document.body.innerHTML = BillsUI({ data : [bills[0]] })
+        // Récupérer le bouton 
         const btnNewBill = screen.getByTestId('btn-new-bill')
-        //recuperation instance class Bills 
+        // Récupérer intance de class bills
         const onNavigate = (pathname) => document.body.innerHTML = ROUTES({ pathname })
-        const billsEmulation = new Bills({ document, onNavigate, store: null, localStorage: window.localStorage })
+        const billsEmulation = new Bills({document, onNavigate, store:null, localStorage: window.localStorage})
+        // Récupération du btn new bill
         const handleClickNewBill = jest.fn(() => billsEmulation.onNavigate(ROUTES_PATH['NewBill']))
-        //eventListener du bouton
+        // Ajout d'un écouteur sur btn
         btnNewBill.addEventListener('click', handleClickNewBill)
         userEvent.click(btnNewBill)
-        //vérifie que le clic est bien écouté
+        // Vérifier que le click est bien ecouté
         expect(handleClickNewBill).toHaveBeenCalled()
-        //vérifie que la page est bien ouverte sur le NewBill 
+        // Vérifier que la page ouvert est NewBill sur le formulaire
         await waitFor(() => screen.getAllByTestId('form-new-bill'))
-        expect(screen.getByTestId('form-new-bill')).toBeTruthy()             
+        expect(screen.getByTestId('form-new-bill')).toBeTruthy        
       })
-    })
+    })  
 
-    describe("When I Click on IconEye", () => {
-      test("Then the preview modal should open", async ()=> {        
-        const onNavigate = (pathname) => {
-          document.body.innerHTML = ROUTES({ pathname })
-        }
-        //recuperation instance class Bills 
-        const billsEmulation = new Bills({
-          document, onNavigate, store: null, localStorage: window.localStorage
-        })
-        //displays the expense reports page
-        document.body.innerHTML = BillsUI({data: [bills[0]]})
-    
-        const modale = document.getElementById('modaleFile')
+    describe('When i click on icon eye ', () => {
+      test('Then the preview modal I sould open', async() => {
+        const onNavigate = (pathname) => document.body.innerHTML = ROUTES({ pathname })
+        // Récupérer l'instance de la class Bills 
+        const billsEmulation = new Bills({ document, onNavigate, store:null, localStorage:window.localStorage})
+        // Afficher le page du rapport
+        document.body.innerHTML = BillsUI({ data: [bills[0]] })
+        // Récupérer la modale
+        const modale = document.getElementById("modaleFile")
         $.fn.modal = jest.fn(() => modale.classList.add("show"))
-    
-        const iconEye = screen.getByTestId('icon-eye')
+        // Récupérer le bouton icon Eye 
+        const iconEye = screen.getByTestId("icon-eye")
         const handleClickIconEye_1 = jest.fn(() => billsEmulation.handleClickIconEye(iconEye))
-        //eventListener sur iconEye
-        iconEye.addEventListener('click', handleClickIconEye_1) 
+        // Ajout d'un écouteur sur btn
+        iconEye.addEventListener('click',handleClickIconEye_1)
         userEvent.click(iconEye)
-        //vérifie que le clic est bien écouté
+        // Vérifier que le click est bien ecouté
         expect(handleClickIconEye_1).toHaveBeenCalled()
-        //vérifie que la modal est bien ouverte sur le NewBill 
+        // Vérifier que la modal est ouvert 
+        expect(modale).toHaveClass('show')
+      })
+    })  
+
+    describe('When i click on others icon eye ', () => {
+      test('Then the preview match the correct modal I sould open', async() => {
+        const firestone = null
+        // Récupérer l'instance de la class Bills 
+        const billsEmulation = new Bills({ document, onNavigate, firestone, localStorage:window.localStorage})
+
+        $.fn.modal = jest.fn() 
+        // Récupérer le bouton icon Eye 
+        const handleClickIconEye = jest.fn(billsEmulation.handleClickIconEye)
+        const iconEyes = screen.getAllByTestId("icon-eye")
+        iconEyes.forEach((icon) => {
+          // Ajout d'un écouteur sur btn
+          icon.addEventListener('click', (e) => handleClickIconEye(icon))
+          userEvent.click(icon)
+        })  
+        expect(() => handleClickIconEye.toBeThrow())  
+        expect(() => handleClickIconEye.toBeThrow(error))                
+        // Vérifier que le click est bien ecouté
+        expect(handleClickIconEye).toHaveBeenCalled()
+        // Vérifier que la modal est ouvert 
+        const modale = document.getElementById('modaleFile')
         expect(modale).toHaveClass("show")
       })
     })
